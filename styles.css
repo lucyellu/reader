@@ -860,6 +860,15 @@ body {
   border-radius: 10px;
   padding: 6px;
 }
+
+.folder-bulk {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 2px 2px;
+}
+.folder-bulk[hidden] { display: none; }
+.folder-bulk .btn-primary { flex: 1; }
 .folder-row {
   display: flex;
   align-items: center;

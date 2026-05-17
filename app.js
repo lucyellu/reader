@@ -373,6 +373,122 @@ function renderFolderListing(data) {
   if (!data.folders.length && !data.files.length) {
     listing.innerHTML += `<div class="muted small" style="padding:14px">No books in this folder.</div>`;
   }
+
+  // Bulk-add bar
+  const bulk = $("#folder-bulk");
+  const addAll = $("#add-all-here");
+  const addRec = $("#add-all-recursive");
+  if (data.files.length || data.folders.length) {
+    bulk.hidden = false;
+    addAll.textContent = data.files.length
+      ? `Add all ${data.files.length} in this folder`
+      : "(no books here)";
+    addAll.disabled = data.files.length === 0;
+    addAll.onclick = () => bulkAddFromFolder(data.files);
+    addRec.hidden = data.folders.length === 0;
+    addRec.onclick = () => bulkAddRecursive(data.dir);
+  } else {
+    bulk.hidden = true;
+  }
+}
+
+async function bulkAddFromFolder(files) {
+  const btn = $("#add-all-here");
+  const prev = btn.textContent;
+  btn.disabled = true;
+  try {
+    const added = await bulkAddFiles(files, (done, total) => {
+      btn.textContent = `Adding ${done}/${total}…`;
+    });
+    closeModal("modal-add");
+    toast(`Added ${added} book${added === 1 ? "" : "s"}`);
+    await renderLibrary();
+  } catch (e) {
+    console.error(e);
+    toast("Bulk add failed: " + (e.message || e));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prev;
+  }
+}
+
+async function bulkAddRecursive(rootDir) {
+  const btn = $("#add-all-recursive");
+  const prev = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Walking subfolders…";
+  try {
+    const files = await walkForBooks(rootDir, 6);
+    if (!files.length) { toast("No books found"); return; }
+    btn.textContent = `Adding ${files.length}…`;
+    const added = await bulkAddFiles(files, (done, total) => {
+      btn.textContent = `Adding ${done}/${total}…`;
+    });
+    closeModal("modal-add");
+    toast(`Added ${added} book${added === 1 ? "" : "s"} from ${rootDir}`);
+    await renderLibrary();
+  } catch (e) {
+    console.error(e);
+    toast("Recursive add failed: " + (e.message || e));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prev;
+  }
+}
+
+async function walkForBooks(dir, maxDepth) {
+  const out = [];
+  const visited = new Set();
+  async function visit(d, depth) {
+    if (depth > maxDepth || visited.has(d)) return;
+    visited.add(d);
+    try {
+      const r = await fetch("/api/list?dir=" + encodeURIComponent(d));
+      const data = await r.json();
+      if (data.files) out.push(...data.files);
+      if (data.folders) {
+        for (const f of data.folders) await visit(f.path, depth + 1);
+      }
+    } catch {}
+  }
+  await visit(dir, 0);
+  return out;
+}
+
+async function bulkAddFiles(files, onProgress) {
+  // Skip per-book enrichment for speed; rely on filename for title/author.
+  const existing = await db.getAll();
+  const existingPaths = new Set(
+    existing.filter(b => b.source === "serverpath").map(b => b.serverPath)
+  );
+  let added = 0;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    if (existingPaths.has(f.path)) continue;
+    const ext = f.ext.slice(1).toLowerCase();
+    let type = ext;
+    if (ext === "htm") type = "html";
+    if (!["epub", "pdf", "txt", "md", "html"].includes(type)) continue;
+    const guess = cleanFilename(f.name);
+    const book = {
+      id: uid(),
+      type, title: guess.title, author: guess.author,
+      source: "serverpath", serverPath: f.path,
+      size: f.size,
+      addedAt: Date.now() - (files.length - i),  // stable sort by listing order
+      progress: {},
+    };
+    try {
+      await db.put(book);
+      existingPaths.add(f.path);
+      added++;
+      if (onProgress && added % 20 === 0) onProgress(added, files.length);
+    } catch (e) {
+      console.warn("bulk add failed for", f.path, e);
+    }
+  }
+  if (onProgress) onProgress(added, files.length);
+  return added;
 }
 
 $("#folder-up").addEventListener("click", () => {
