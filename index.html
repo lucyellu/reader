@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f0f11" />
+  <title>Dreams - reading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- ============================ LIBRARY ============================ -->
+    <section class="screen screen-library active" id="screen-library">
+      <header class="library-header">
+        <h1 class="library-title">Dreams</h1>
+        <button class="icon-btn" id="btn-open-add" aria-label="Add book">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+
+      <!-- Hero: currently reading -->
+      <div class="hero" id="hero" hidden>
+        <p class="hero-eyebrow">Continue reading</p>
+        <button class="hero-card" id="hero-card">
+          <div class="hero-cover" id="hero-cover">
+            <span class="hero-cover-title" id="hero-cover-title"></span>
+          </div>
+          <div class="hero-meta">
+            <div class="hero-title" id="hero-title"></div>
+            <div class="hero-author" id="hero-author"></div>
+            <div class="progress-bar"><span id="hero-progress" style="width:0%"></span></div>
+            <div class="hero-progress-label" id="hero-progress-label">0%</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-library" id="empty-library">
+        <div class="empty-book">
+          <div class="empty-book-cover">
+            <span>Add<br />your first<br />book</span>
+          </div>
+        </div>
+        <p class="empty-hint">Open an EPUB or PDF from disk,<br />browse your library folder,<br />or paste a URL to read an article.</p>
+        <div class="empty-actions">
+          <button class="primary-pill" id="empty-add">+ Add a book</button>
+          <button class="ghost-pill" id="empty-sample">Try a sample</button>
+        </div>
+      </div>
+
+      <!-- All books -->
+      <div class="books-section" id="books-section" hidden>
+        <h2 class="section-heading">Your library <span class="count" id="books-count"></span></h2>
+        <div class="books-grid" id="books-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============================ READER ============================ -->
+    <section class="screen screen-reader" id="screen-reader">
+      <header class="reader-header">
+        <button class="icon-btn" id="btn-back" aria-label="Back to library">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </button>
+        <div class="reader-title" id="reader-title"></div>
+        <button class="icon-btn" id="btn-settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        </button>
+      </header>
+
+      <main class="reader-stage" id="reader-stage">
+        <div class="card-ghost ghost-3" aria-hidden="true"></div>
+        <div class="card-ghost ghost-2" aria-hidden="true"></div>
+        <div class="card-ghost ghost-1" aria-hidden="true"></div>
+        <div class="card-frame" id="card-frame">
+          <div class="card-header" id="card-header">
+            <span id="card-meta-left"></span>
+            <span id="card-meta-right"></span>
+          </div>
+          <div class="reader-loading" id="reader-loading">Loading book…</div>
+          <div class="reader-frame" id="reader-frame"></div>
+        </div>
+        <button class="page-tap page-tap-prev" id="page-prev" aria-label="Previous page"></button>
+        <button class="page-tap page-tap-next" id="page-next" aria-label="Next page"></button>
+      </main>
+
+      <footer class="reader-footer">
+        <div class="reader-progress">
+          <span id="reader-progress-label">0%</span>
+          <div class="progress-track" id="progress-track">
+            <span id="reader-progress" style="width:0%"></span>
+          </div>
+          <span id="reader-page-label"></span>
+        </div>
+      </footer>
+    </section>
+  </div>
+
+  <!-- ============================ ADD MODAL ============================ -->
+  <div class="modal" id="modal-add" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-sheet">
+      <button class="modal-close" data-close-modal aria-label="Close">×</button>
+      <h2>Add a book</h2>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="file" role="tab">From file</button>
+        <button class="tab" data-tab="folder" role="tab">Browse folder</button>
+        <button class="tab" data-tab="url" role="tab">From URL</button>
+      </div>
+
+      <!-- File picker -->
+      <div class="tab-panel active" data-panel="file">
+        <p class="muted">Pick an EPUB, PDF, or text file from your device.</p>
+        <label class="file-drop" id="file-drop">
+          <input type="file" id="file-input" accept=".epub,.pdf,.txt,.md,application/epub+zip,application/pdf,text/plain,text/markdown" hidden />
+          <div class="file-drop-inner">
+            <strong>Choose file</strong>
+            <span class="muted small">or drop one here</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- Folder browser -->
+      <div class="tab-panel" data-panel="folder">
+        <div class="folder-toolbar">
+          <button class="folder-up" id="folder-up" aria-label="Up one level">↑</button>
+          <input type="text" id="folder-path" class="folder-path" />
+          <button class="folder-go" id="folder-go">Go</button>
+        </div>
+        <div class="folder-quick" id="folder-quick"></div>
+        <div class="folder-listing" id="folder-listing">
+          <div class="muted small" style="padding:14px">Loading…</div>
+        </div>
+      </div>
+
+      <!-- URL -->
+      <div class="tab-panel" data-panel="url">
+        <p class="muted">Paste a link to an article or blog post — we'll extract the readable text.</p>
+        <input type="url" class="url-input" id="url-input" placeholder="https://example.com/post" />
+        <div class="modal-actions">
+          <button class="btn-primary" id="url-add">Add article</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ SETTINGS DRAWER ============================ -->
+  <div class="modal" id="modal-settings" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-sheet modal-sheet--narrow">
+      <button class="modal-close" data-close-modal aria-label="Close">×</button>
+      <h2>Reader settings</h2>
+
+      <div class="setting-row">
+        <label>Theme</label>
+        <div class="seg" id="seg-theme">
+          <button data-value="cream" class="active">Cream</button>
+          <button data-value="sepia">Sepia</button>
+          <button data-value="dark">Dark</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label>Font</label>
+        <div class="seg" id="seg-font">
+          <button data-value="serif" class="active">Serif</button>
+          <button data-value="sans">Sans</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label>Size</label>
+        <div class="seg" id="seg-size">
+          <button data-value="-1">A-</button>
+          <button data-value="0" class="active">A</button>
+          <button data-value="1">A+</button>
+          <button data-value="2">A++</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label>Flow</label>
+        <div class="seg" id="seg-flow">
+          <button data-value="paginated" class="active">Pages</button>
+          <button data-value="scrolled">Scroll</button>
+          <button data-value="stack">Stack</button>
+        </div>
+      </div>
+
+      <div class="setting-actions">
+        <button class="btn-danger" id="delete-book">Remove from library</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ TOAST ============================ -->
+  <div class="toast" id="toast" hidden></div>
+
+  <!-- Reader engines: epub.js, pdf.js, Readability -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mozilla/readability@0.5.0/Readability.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

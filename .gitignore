@@ -1,0 +1,20 @@
+# Generated icon (re-created by setup-desktop-shortcut.ps1)
+dreams.ico
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Logs / transient
+*.log
