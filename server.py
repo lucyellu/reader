@@ -1,5 +1,5 @@
 """
-Dreams reader - local server.
+Folio reader - local server.
 
 Serves the static frontend plus three small APIs:
   GET /api/list?dir=<absolute-path>      list folders + book-like files in a dir
@@ -67,6 +67,8 @@ class Handler(BaseHTTPRequestHandler):
 
     # ---- static ----
     def serve_static(self, path):
+        # Strip any query string used for cache-busting (e.g. styles.css?v=3)
+        path = path.split("?", 1)[0]
         if path in ("/", ""):
             path = "/index.html"
         filepath = os.path.normpath(os.path.join(ROOT, path.lstrip("/")))
@@ -76,7 +78,7 @@ class Handler(BaseHTTPRequestHandler):
         if not os.path.isfile(filepath):
             self.send_error(404, "Not found")
             return
-        self.stream_file(filepath)
+        self.stream_file(filepath, no_store=True)
 
     # ---- /api/list ----
     def api_list(self, query):
@@ -136,7 +138,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         self.stream_file(p)
 
-    def stream_file(self, filepath):
+    def stream_file(self, filepath, no_store=False):
         size = os.path.getsize(filepath)
         mime, _ = mimetypes.guess_type(filepath)
         mime = mime or "application/octet-stream"
@@ -168,7 +170,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", mime)
         self.send_header("Accept-Ranges", "bytes")
         self.send_header("Content-Length", str(length))
-        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Cache-Control", "no-store, must-revalidate" if no_store else "no-cache")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
@@ -233,7 +235,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    print(f"Dreams reader - http://localhost:{PORT}")
+    print(f"Folio - http://localhost:{PORT}")
     print(f"Serving:      {ROOT}")
     print("Ctrl+C to stop.")
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)

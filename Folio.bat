@@ -27,7 +27,7 @@ if %errorlevel% == 0 (
     echo Server already running on port %PORT%.
 ) else (
     echo Starting server on port %PORT% in background...
-    start /min "Dreams server" cmd /c "cd /d %DIR% && %PY% server.py"
+    start /min "Folio server" cmd /c "cd /d %DIR% && %PY% server.py"
     timeout /t 1 /nobreak >nul
 )
 
