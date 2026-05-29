@@ -1,5 +1,7 @@
 # folio
 
+**[Try it live →](https://folio-reader.netlify.app/)**
+
 Minimalist desktop reader for EPUBs, PDFs, and web articles. Opens a quiet single-column reading view; serves files from a local library folder; remembers progress.
 
 ![Folio](screenshot.png)
